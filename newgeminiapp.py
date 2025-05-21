@@ -7,6 +7,7 @@ import pandas as pd
 import os
 import re
 import json
+import time
 from dotenv import load_dotenv
 from github import Github
 import openai
@@ -55,7 +56,8 @@ Please analyze the provided document (PDF, DOCX, or TXT) and extract all tasks t
 4. If a sub-subtask has its own subtasks, include them as sub-subtasks
 5. the description should be taken from the document
 6. keep the descriptions as short as possible but meaningful and concise which match in my document.
-
+7. make sure to don't miss-out and infromation from the document
+8. Do not include any sections related to Overview, Purpose, Scope, Tech stack suggestions, Time or hour estimates, Web design notes, Total days or effort summaries.
 Format the output as JSON with the following structure:
 {{
   "tasks": [
@@ -78,6 +80,10 @@ Format the output as JSON with the following structure:
   ]
 }}
 Important Guidelines:
+- don't add None, Select, and choose between  in description of tasks
+- if round brackets are used in the document then remove them from the description
+- if there are smimilar sub-tasks put them in under one related task 
+- if description is more than 200 characters then convert into subtasks
 - use only text from the document to fill in the JSON structure
 - Do not add any additional text or comments outside the JSON structure
 - don't include any explanations or summaries
@@ -97,7 +103,8 @@ Document Content:
 """
     try:
         model = genai.GenerativeModel("gemini-2.0-flash")
-        response = model.generate_content(prompt)
+        response = model.generate_content(prompt,
+        generation_config={"temperature": 0.1})
         raw_output = response.text.strip()
 
         match = re.search(r"\{[\s\S]*\}", raw_output)
@@ -368,52 +375,42 @@ Description: {ticket['description']}
 """
 
 def simulate_test_case_generation_ai(ticket, output_dir="test_cases"):
+    import google.generativeai as genai
     try:
-        print("in try block for test case generation")
         os.makedirs(output_dir, exist_ok=True)
         file_path = os.path.join(output_dir, f"{ticket['key']}_test_cases.md")
 
         prompt = generate_test_case_prompt(ticket)
 
-        response = requests.post(
-            GROQ_API_URL,
-            headers={
-                "Authorization": f"Bearer {GROQ_API_KEY}",
-                "Content-Type": "application/json"
-            },
-            json={
-                "model": "llama3-70b-8192",
-                "messages": [
-                    {"role": "system", "content": "You generate QA test cases."},
-                    {"role": "user", "content": prompt}
-                ],
-                "temperature": 0.5
-            }
-        )
+        # Use Gemini to generate test cases
+        model = genai.GenerativeModel("gemini-2.0-flash")
+        response = model.generate_content(prompt)
+        ai_output = response.text.strip()
 
-        # Handle API response
-        if response.status_code == 200:
-            result = response.json()
-            ai_output = result['choices'][0]['message']['content']
-            try:
-                with open(file_path, "w") as f:
-                    f.write(f"# Test Cases for {ticket['key']} - {ticket['summary']}\n\n{ai_output}")
-            except Exception as file_error:
-                print(f"❌ Error writing test cases to file for {ticket['key']}: {file_error}")
-        else:
-            error_msg = f"API error {response.status_code}: {response.text}"
-            print(f"❌ {error_msg}")
-            with open(file_path, "w") as f:
-                f.write(f"# Failed to generate test cases for {ticket['key']}\n{error_msg}")
+        try:
+            with open(file_path, "w", encoding="utf-8") as f:
+                f.write(f"# Test Cases for {ticket['key']} - {ticket['summary']}\n\n{ai_output}")
+        except Exception as file_error:
+            print(f"❌ Error writing test cases to file for {ticket['key']}: {file_error}")
     except Exception as e:
         print(f"❌ Unexpected error during test case generation for {ticket['key']}: {e}")
         fallback_path = os.path.join(output_dir, f"{ticket['key']}_error.log")
-        with open(fallback_path, "w") as f:
+        with open(fallback_path, "w", encoding="utf-8") as f:
             f.write(f"# Critical error while processing {ticket['key']}\nError: {str(e)}")
+
+def sanitize_branch_name(name):
+    # Replace spaces with underscores, remove invalid characters
+    name = name.replace(" ", "_")
+    # Only allow letters, numbers, underscores, hyphens, and slashes
+    name = re.sub(r'[^a-zA-Z0-9_\-\/]', '', name)
+    return name
+
+
+
 
 
 # Streamlit UI
-st.set_page_config(page_title="Jira Task Extractor via local llama", layout="wide")
+st.set_page_config(page_title="Jira Task Extractor via gemini", layout="wide")
 # Custom CSS for styling
 st.markdown("""
 <style>
@@ -528,7 +525,7 @@ st.markdown("""
     }
 </style>
 """, unsafe_allow_html=True)
-st.title("📄📌 Jira Task Extractor using Gemini API")
+st.title("📄📌 Jira Task Extractor using Gemini ")
 
 uploaded_file = st.file_uploader("Upload a project document", type=["docx", "pdf", "txt"])
 
@@ -545,12 +542,11 @@ if uploaded_file is not None:
 
   
 
-    st.subheader("🧠 Generating Summary with LLaMA...")
+    st.subheader(" Generating Summary ")
     if st.button("genrate response"):
         summary = summarize_with_gemini(cleaned_text)
         st.write("### Summary:")
         if summary:
-            # create the view to store llama response
             with open("geminisummary.json", "w", encoding="utf-8") as f:
               f.write(summary)
             st.subheader("📦 JSON Task Summary")
@@ -570,12 +566,14 @@ if uploaded_file is not None:
     os.unlink(temp_docx_path)
 
 
-use_saved = st.button("🔁 View the extracted tasks ")
+use_saved = st.checkbox("🔁 View the extracted tasks ")
 if use_saved:
     try:
         with open("geminisummary.json", "r", encoding="utf-8") as f:
             summary = f.read()
-        st.success("Loaded Tasks from saved file.")
+        msg = st.success("Loaded Tasks from saved file.")
+        time.sleep(1)
+        msg.empty()
         try:
             data = json.loads(summary)
             if "tasks" not in data:
@@ -590,9 +588,11 @@ if use_saved:
                 with tab2:
                     display_task_table(tasks_data)
 
-            st.success("Task hierarchy visualized successfully!")
+            msg = st.success("Task hierarchy visualized successfully!")
+            time.sleep(1)
+            msg.empty()
             #  jira tickets creation button
-            if st.button("🚀 Create Tickets on Jira"):
+            if st.button(" Create Tickets on Jira"):
                 try:
                     for t in tasks_data:
                         epic_key, epic_type = create_jira_issue(t["title"], t.get("description", ""))
@@ -610,31 +610,28 @@ if use_saved:
                 except Exception as e:
                     st.error(f"❌ Jira issue creation failed: {e}")
             #  github brnaches creation button
-            if st.button("🚀 Create Github Branches "):
-                for t in tasks_data:
-                    branch_name = f"{t['title'].replace(' ', '_').replace('.', '_')}".lower()
+            if st.button(" Create Github Branches "):
+                for t_idx, t in enumerate(tasks_data):
+                    branch_name = f"feature_{t_idx+1}_{sanitize_branch_name(t['title'])}".lower()
                     try:
                         create_github_branch(branch_name)
-                        # st.success(f"Created branch: {branch_name}")
                     except Exception as e:
                         st.error(f"Failed to create branch {branch_name}: {e}")
-                    for stask in t.get("subtasks", []):
-                        sub_branch_name = f"{t['title'].replace(' ', '_').replace('.', '_')}".lower()
+                    for st_idx, stask in enumerate(t.get("subtasks", [])):
+                        sub_branch_name = f"feature_{t_idx+1}_{st_idx+1}_{sanitize_branch_name(stask['title'])}".lower()
                         try:
                             create_github_branch(sub_branch_name)
-                            # st.success(f"Created branch: {sub_branch_name}")
                         except Exception as e:
                             st.error(f"Failed to create branch {sub_branch_name}: {e}")
-                        for sstask in stask.get("subtasks", []):
-                            sub_sub_branch_name = f"{t['title'].replace(' ', '_').replace('.', '_')}".lower()
+                        for sst_idx, sstask in enumerate(stask.get("subtasks", [])):
+                            sub_sub_branch_name = f"feature_{t_idx+1}_{st_idx+1}_{sst_idx+1}_{sanitize_branch_name(sstask['title'])}".lower()
                             try:
                                 create_github_branch(sub_sub_branch_name)
-                                # st.success(f"Created branch: {sub_sub_branch_name}")
                             except Exception as e:
                                 st.error(f"Failed to create branch {sub_sub_branch_name}: {e}")
-                # st.success("All branches created!")
+                            # st.success("All branches created!")
             
-            if st.button("🚀 Create test cases is comming soon "):
+            if st.button("Create test cases "):
                 # Simulate test case generation for each task, subtask, and sub-subtask
                 def walk_tasks_for_test_cases(tasks, parent_key="T"):
                     for idx, task in enumerate(tasks):
@@ -646,6 +643,7 @@ if use_saved:
                         }
                         # replace with this Simulate_test_case_generation_ai for gerating test cases through AI 
                         simulate_test_case_generation_ai(ticket)
+                        # time.sleep(2)  # Add a 2-second delay after each test case generation
                         # Subtasks
                         if "subtasks" in task and task["subtasks"]:
                             walk_tasks_for_test_cases(task["subtasks"], parent_key=f"{task_key}.")
