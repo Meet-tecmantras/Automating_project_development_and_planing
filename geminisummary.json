@@ -1,0 +1,84 @@
+{
+  "tasks": [
+    {
+      "title": "Project Requirement Document",
+      "description": "Analyze and outline the technical requirements for Project Requirement Document",
+      "subtasks": [
+        {
+          "title": "Implement and test the components",
+          "description": "Implement and test the components for Project Requirement Document"
+        }
+      ]
+    },
+    {
+      "title": "Implement a user login system",
+      "description": "Implement a user login system with email and password authentication.",
+      "subtasks": [
+        {
+          "title": "Analyze and outline the technical requirements",
+          "description": "Analyze and outline the technical requirements for Implement a user login system with email and password authentication."
+        },
+        {
+          "title": "Implement and test the components",
+          "description": "Implement and test the components for Implement a user login system with email and password authentication."
+        }
+      ]
+    },
+    {
+      "title": "Create a user registration page",
+      "description": "Create a user registration page with form validation.",
+      "subtasks": [
+        {
+          "title": "Analyze and outline the technical requirements",
+          "description": "Analyze and outline the technical requirements for Create a user registration page with form validation."
+        },
+        {
+          "title": "Implement and test the components",
+          "description": "Implement and test the components for Create a user registration page with form validation."
+        }
+      ]
+    },
+    {
+      "title": "Build a dashboard",
+      "description": "Build a dashboard that displays user statistics and recent activity.",
+      "subtasks": [
+        {
+          "title": "Analyze and outline the technical requirements",
+          "description": "Analyze and outline the technical requirements for Build a dashboard that displays user statistics and recent activity."
+        },
+        {
+          "title": "Implement and test the components",
+          "description": "Implement and test the components for Build a dashboard that displays user statistics and recent activity."
+        }
+      ]
+    },
+    {
+      "title": "Design a settings page",
+      "description": "Design a settings page where users can update their profile and password.",
+      "subtasks": [
+        {
+          "title": "Analyze and outline the technical requirements",
+          "description": "Analyze and outline the technical requirements for Design a settings page where users can update their profile and password."
+        },
+        {
+          "title": "Implement and test the components",
+          "description": "Implement and test the components for Design a settings page where users can update their profile and password."
+        }
+      ]
+    },
+    {
+      "title": "Set up email verification",
+      "description": "Set up email verification after registration.",
+      "subtasks": [
+        {
+          "title": "Analyze and outline the technical requirements",
+          "description": "Analyze and outline the technical requirements for Set up email verification after registration."
+        },
+        {
+          "title": "Implement and test the components",
+          "description": "Implement and test the components for Set up email verification after registration."
+        }
+      ]
+    }
+  ]
+}
