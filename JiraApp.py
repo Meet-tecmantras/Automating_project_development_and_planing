@@ -33,8 +33,6 @@ genai.configure(api_key=GEMINI_API_KEY)
 def extract_text_from_docx(docx_path):
     return docx2txt.process(docx_path)
 
-
-
 def extract_text_from_pdf(pdf_path):
     """Extract text from a PDF file."""
     text = ""
@@ -48,8 +46,6 @@ def extract_text_from_pdf(pdf_path):
         st.error(f"Error extracting text from PDF: {e}")
         return None
 
-
-
 def extract_text_from_txt(txt_path):
     """Extract text from a TXT file."""
     try:
@@ -58,8 +54,6 @@ def extract_text_from_txt(txt_path):
     except Exception as e:
         st.error(f"Error extracting text from TXT: {e}")
         return None
-
-
 
 def extract_text_from_file(file_path, file_type):
     """Extract text from a file based on its type."""
@@ -73,18 +67,12 @@ def extract_text_from_file(file_path, file_type):
         st.error(f"Unsupported file type: {file_type}")
         return None
 
-
-
 def prrse_tasks(text):
     lines = text.split('\n')
     return [line for line in lines if line.strip() != '']
 
-
-
 def clean_text(text):
     return text.encode("utf-8", errors="ignore").decode("utf-8", errors="ignore")
-
-
 
 def summarize_with_gemini(text):
     prompt = f"""
@@ -159,9 +147,6 @@ Document Content:
         st.error(f"Gemini API error: {e}")
         return None
 
-
-
-
 def count_tasks(tasks_data):
     """Count total number of tasks, subtasks, and sub-subtasks"""
     main_tasks = len(tasks_data)
@@ -177,8 +162,6 @@ def count_tasks(tasks_data):
                     sub_subtasks_count += len(subtask["subtasks"])
                     
     return main_tasks, subtasks_count, sub_subtasks_count
-
-
 
 def display_task_statistics(tasks_data):
     """Display task statistics in a neat layout"""
@@ -219,8 +202,6 @@ def display_task_statistics(tasks_data):
         </div>
         """, unsafe_allow_html=True)
 
-
-
 def display_sub_subtasks(sub_subtasks):
     """Display sub-subtasks with nice formatting"""
     for sub_subtask in sub_subtasks:
@@ -230,9 +211,6 @@ def display_sub_subtasks(sub_subtasks):
             <div class="sub-subtask-description">{sub_subtask.get("description", "")}</div>
         </div>
         """, unsafe_allow_html=True)
-
-
-
 
 def display_subtasks(subtasks):
     """Display subtasks with nice formatting"""
@@ -248,9 +226,6 @@ def display_subtasks(subtasks):
         if "subtasks" in subtask and subtask["subtasks"]:
             display_sub_subtasks(subtask["subtasks"])
 
-
-
-
 def display_tasks(tasks_data):
     """Display tasks with nice formatting"""
     for task in tasks_data:
@@ -265,9 +240,6 @@ def display_tasks(tasks_data):
             # Check and display subtasks if they exist
             if "subtasks" in task and task["subtasks"]:
                 display_subtasks(task["subtasks"])
-
-
-
 
 def display_task_table(tasks_data):
     """Display tasks in a table format"""
@@ -307,8 +279,6 @@ def display_task_table(tasks_data):
     df = pd.DataFrame(table_data)
     st.dataframe(df, use_container_width=True, hide_index=True)
 
-
-
 def get_valid_issue_types():
     url = f"{JIRA_BASE_URL}/rest/api/3/issuetype"
     auth = (JIRA_EMAIL, JIRA_API_TOKEN)
@@ -316,8 +286,6 @@ def get_valid_issue_types():
     if response.status_code == 200:
         return [item["name"] for item in response.json()]
     return []
-
-
 
 def create_jira_issue(summary, description, issue_type="Epic", parent_id=None, parent_type=None):
     st.write(f"📝 Creating Jira issue: {summary}")
@@ -381,8 +349,6 @@ def create_jira_issue(summary, description, issue_type="Epic", parent_id=None, p
         st.code(response.text)
         return None, None
 
-
-
 def create_github_branch(branch_name, base="main"):
     g = Github(GITHUB_TOKEN)
     repo = g.get_repo(GITHUB_REPO)
@@ -394,8 +360,6 @@ def create_github_branch(branch_name, base="main"):
         st.stop()
 
     repo.create_git_ref(ref=f"refs/heads/{branch_name}", sha=source.commit.sha)
-
-
 
 def simulate_test_case_generation(ticket, output_dir="test_cases"):
     os.makedirs(output_dir, exist_ok=True)
@@ -424,8 +388,6 @@ def simulate_test_case_generation(ticket, output_dir="test_cases"):
     
     # print(f"✅ Test Cases Simulated: {file_path}")
 
-
-
 def generate_test_case_prompt(ticket):
     return f"""
 You are a senior QA engineer. Based on the following task, write two detailed test cases including:
@@ -439,8 +401,6 @@ Task:
 Title: {ticket['summary']}
 Description: {ticket['description']}
 """
-
-
 
 def simulate_test_case_generation_ai(ticket, output_dir="test_cases"):
     import google.generativeai as genai
@@ -465,8 +425,6 @@ def simulate_test_case_generation_ai(ticket, output_dir="test_cases"):
         fallback_path = os.path.join(output_dir, f"{ticket['key']}_error.log")
         with open(fallback_path, "w", encoding="utf-8") as f:
             f.write(f"# Critical error while processing {ticket['key']}\nError: {str(e)}")
-
-
 
 def sanitize_branch_name(name):
     # Replace spaces with underscores, remove invalid characters
