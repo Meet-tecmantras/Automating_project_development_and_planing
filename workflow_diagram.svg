@@ -1,0 +1,166 @@
+<svg viewBox="0 0 1200 1600" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .box { fill: #e3f2fd; stroke: #1976d2; stroke-width: 2; }
+      .decision { fill: #fff3e0; stroke: #f57c00; stroke-width: 2; }
+      .process { fill: #e8f5e8; stroke: #388e3c; stroke-width: 2; }
+      .data { fill: #fce4ec; stroke: #c2185b; stroke-width: 2; }
+      .endpoint { fill: #f3e5f5; stroke: #7b1fa2; stroke-width: 2; }
+      .text { font-family: Arial, sans-serif; font-size: 12px; text-anchor: middle; }
+      .small-text { font-family: Arial, sans-serif; font-size: 10px; text-anchor: middle; }
+      .arrow { stroke: #333; stroke-width: 2; fill: none; marker-end: url(#arrowhead); }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#333" />
+    </marker>
+  </defs>
+
+  <!-- Start -->
+  <ellipse cx="600" cy="50" rx="80" ry="30" class="endpoint"/>
+  <text x="600" y="55" class="text">START</text>
+
+  <!-- Document Input -->
+  <rect x="520" y="100" width="160" height="60" rx="5" class="box"/>
+  <text x="600" y="125" class="text">Document Input</text>
+  <text x="600" y="140" class="small-text">(PDF, DOC, TXT, etc.)</text>
+
+  <!-- Text Extraction -->
+  <rect x="520" y="200" width="160" height="60" rx="5" class="process"/>
+  <text x="600" y="225" class="text">Text Extraction</text>
+  <text x="600" y="240" class="small-text">from Document</text>
+
+  <!-- LLM Processing -->
+  <rect x="520" y="300" width="160" height="60" rx="5" class="process"/>
+  <text x="600" y="320" class="text">LLM API Call</text>
+  <text x="600" y="335" class="small-text">Pre-prompt + Text</text>
+
+  <!-- JSON Response -->
+  <rect x="520" y="400" width="160" height="80" rx="5" class="data"/>
+  <text x="600" y="425" class="text">JSON Response</text>
+  <text x="600" y="440" class="small-text">3-Level Structure:</text>
+  <text x="600" y="455" class="small-text">main_task → subtasks</text>
+  <text x="600" y="470" class="small-text">→ sub_subtasks</text>
+
+  <!-- Pretty View Display -->
+  <rect x="520" y="520" width="160" height="60" rx="5" class="box"/>
+  <text x="600" y="545" class="text">Display JSON</text>
+  <text x="600" y="560" class="small-text">in Pretty View</text>
+
+  <!-- Edit Options -->
+  <rect x="200" y="620" width="140" height="60" rx="5" class="decision"/>
+  <text x="270" y="645" class="text">Edit Tasks</text>
+  <text x="270" y="660" class="small-text">Options</text>
+
+  <!-- Add Options -->
+  <rect x="520" y="620" width="140" height="60" rx="5" class="decision"/>
+  <text x="590" y="645" class="text">Add Tasks</text>
+  <text x="590" y="660" class="small-text">Options</text>
+
+  <!-- Delete Options -->
+  <rect x="840" y="620" width="140" height="60" rx="5" class="decision"/>
+  <text x="910" y="645" class="text">Delete Tasks</text>
+  <text x="910" y="660" class="small-text">Options</text>
+
+  <!-- Confirm Tasks -->
+  <rect x="520" y="720" width="160" height="60" rx="5" class="process"/>
+  <text x="600" y="745" class="text">Confirm Tasks</text>
+  <text x="600" y="760" class="small-text">Finalize Structure</text>
+
+  <!-- Jira Project Decision -->
+  <polygon points="520,820 600,800 680,820 600,840" class="decision"/>
+  <text x="600" y="825" class="text">Jira Project?</text>
+
+  <!-- New/Existing Jira Project -->
+  <rect x="380" y="870" width="120" height="50" rx="5" class="box"/>
+  <text x="440" y="890" class="text">New Project</text>
+  <text x="440" y="905" class="small-text">(Jira)</text>
+
+  <rect x="700" y="870" width="120" height="50" rx="5" class="box"/>
+  <text x="760" y="890" class="text">Existing Project</text>
+  <text x="760" y="905" class="small-text">(Jira)</text>
+
+  <!-- Jira Issues Creation -->
+  <rect x="520" y="960" width="160" height="60" rx="5" class="process"/>
+  <text x="600" y="980" class="text">Create Jira Issues</text>
+  <text x="600" y="995" class="small-text">Based on Tasks</text>
+
+  <!-- GitHub Repo Decision -->
+  <polygon points="520,1060 600,1040 680,1060 600,1080" class="decision"/>
+  <text x="600" y="1065" class="text">GitHub Repo?</text>
+
+  <!-- New/Existing GitHub Repo -->
+  <rect x="380" y="1110" width="120" height="50" rx="5" class="box"/>
+  <text x="440" y="1130" class="text">New Repo</text>
+  <text x="440" y="1145" class="small-text">(GitHub)</text>
+
+  <rect x="700" y="1110" width="120" height="50" rx="5" class="box"/>
+  <text x="760" y="1130" class="text">Existing Repo</text>
+  <text x="760" y="1145" class="small-text">(GitHub)</text>
+
+  <!-- GitHub Branch Creation -->
+  <rect x="520" y="1200" width="160" height="60" rx="5" class="process"/>
+  <text x="600" y="1220" class="text">Create GitHub</text>
+  <text x="600" y="1235" class="text">Branches</text>
+
+  <!-- Test Case Generation -->
+  <rect x="520" y="1300" width="160" height="60" rx="5" class="process"/>
+  <text x="600" y="1320" class="text">Generate Test Cases</text>
+  <text x="600" y="1335" class="small-text">for Each Jira Issue</text>
+
+  <!-- Push Test Cases -->
+  <rect x="520" y="1400" width="160" height="60" rx="5" class="process"/>
+  <text x="600" y="1420" class="text">Push Test Cases</text>
+  <text x="600" y="1435" class="small-text">to GitHub Branches</text>
+
+  <!-- End -->
+  <ellipse cx="600" cy="1520" rx="80" ry="30" class="endpoint"/>
+  <text x="600" y="1525" class="text">END</text>
+
+  <!-- Arrows -->
+  <line x1="600" y1="80" x2="600" y2="100" class="arrow"/>
+  <line x1="600" y1="160" x2="600" y2="200" class="arrow"/>
+  <line x1="600" y1="260" x2="600" y2="300" class="arrow"/>
+  <line x1="600" y1="360" x2="600" y2="400" class="arrow"/>
+  <line x1="600" y1="480" x2="600" y2="520" class="arrow"/>
+  
+  <!-- Branching to Edit/Add/Delete -->
+  <line x1="600" y1="580" x2="270" y2="620" class="arrow"/>
+  <line x1="600" y1="580" x2="590" y2="620" class="arrow"/>
+  <line x1="600" y1="580" x2="910" y2="620" class="arrow"/>
+  
+  <!-- Convergence back to Confirm -->
+  <line x1="270" y1="680" x2="600" y2="720" class="arrow"/>
+  <line x1="590" y1="680" x2="600" y2="720" class="arrow"/>
+  <line x1="910" y1="680" x2="600" y2="720" class="arrow"/>
+  
+  <line x1="600" y1="780" x2="600" y2="800" class="arrow"/>
+  
+  <!-- Jira Decision branches -->
+  <line x1="580" y1="830" x2="440" y2="870" class="arrow"/>
+  <line x1="620" y1="830" x2="760" y2="870" class="arrow"/>
+  
+  <!-- Convergence to Jira Issues -->
+  <line x1="440" y1="920" x2="600" y2="960" class="arrow"/>
+  <line x1="760" y1="920" x2="600" y2="960" class="arrow"/>
+  
+  <line x1="600" y1="1020" x2="600" y2="1040" class="arrow"/>
+  
+  <!-- GitHub Decision branches -->
+  <line x1="580" y1="1070" x2="440" y2="1110" class="arrow"/>
+  <line x1="620" y1="1070" x2="760" y2="1110" class="arrow"/>
+  
+  <!-- Convergence to GitHub Branches -->
+  <line x1="440" y1="1160" x2="600" y2="1200" class="arrow"/>
+  <line x1="760" y1="1160" x2="600" y2="1200" class="arrow"/>
+  
+  <line x1="600" y1="1260" x2="600" y2="1300" class="arrow"/>
+  <line x1="600" y1="1360" x2="600" y2="1400" class="arrow"/>
+  <line x1="600" y1="1460" x2="600" y2="1490" class="arrow"/>
+
+  <!-- Decision Labels -->
+  <text x="440" y="850" class="small-text">New</text>
+  <text x="760" y="850" class="small-text">Existing</text>
+  <text x="440" y="1090" class="small-text">New</text>
+  <text x="760" y="1090" class="small-text">Existing</text>
+
+</svg>
