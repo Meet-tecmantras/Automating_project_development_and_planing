@@ -38,6 +38,8 @@ if 'selected_jira_key' not in st.session_state:
     st.session_state.selected_jira_key = JIRA_PROJECT_KEY
 if 'selected_repo' not in st.session_state:
     st.session_state.selected_repo = GITHUB_REPO
+if "view_and_manage" not in st.session_state:
+    st.session_state["view_and_manage"] = False
 
 # Your existing functions (keeping all of them)
 def extract_text_from_docx(docx_path):
@@ -529,7 +531,19 @@ def get_github_repos():
     except Exception as e:
         st.error(f"Failed to fetch GitHub repos: {e}")
     return []
-
+def get_jira_account_id():
+    """Fetch the Atlassian accountId for the current Jira user."""
+    url = f"{JIRA_BASE_URL}/rest/api/3/myself"
+    auth = (JIRA_EMAIL, JIRA_API_TOKEN)
+    try:
+        response = requests.get(url, auth=auth)
+        if response.status_code == 200:
+            return response.json().get("accountId")
+        else:
+            st.error(f"Failed to fetch Jira accountId: {response.text}")
+    except Exception as e:
+        st.error(f"Error fetching Jira accountId: {e}")
+    return None
 def create_jira_project(project_key, project_name, project_type="software"):
     """Create a new Jira project"""
     url = f"{JIRA_BASE_URL}/rest/api/3/project"
@@ -538,20 +552,45 @@ def create_jira_project(project_key, project_name, project_type="software"):
         "Content-Type": "application/json"
     }
     auth = (JIRA_EMAIL, JIRA_API_TOKEN)
-    
+
+    # Select correct template key based on project_type
+    template_keys = {
+        "software": "com.pyxis.greenhopper.jira:gh-simplified-agility-scrum",
+        "business": "com.atlassian.jira-core-project-templates:jira-core-simplified-process-control",
+        "service_desk": "com.atlassian.servicedesk:simplified-it-service-management"
+    }
+    projectTemplateKey = template_keys.get(project_type, template_keys["software"])
+
+    # Get the accountId for the project lead
+    lead_account_id = get_jira_account_id()
+    if not lead_account_id:
+        return False, "Could not fetch Jira accountId for project lead."
+
     payload = {
         "key": project_key,
         "name": project_name,
         "projectTypeKey": project_type,
-        "projectTemplateKey": "com.atlassian.jira-core-project-templates:jira-core-simplified-process-control",
-        "leadAccountId": JIRA_EMAIL
+        "projectTemplateKey": projectTemplateKey,
+        "leadAccountId": lead_account_id
     }
-    
+
     try:
         response = requests.post(url, json=payload, headers=headers, auth=auth)
         if response.status_code == 201:
             return True, response.json()
         else:
+            # Check for duplicate project name/key error
+            try:
+                error_json = response.json()
+                if (
+                    'errors' in error_json and (
+                        'projectName' in error_json['errors'] or 'projectKey' in error_json['errors']
+                    )
+                ):
+                    # st.error("A project with that name or key already exists.")
+                    return False, "A project with that name or key already exists please try with different name or key."
+            except Exception:
+                pass
             return False, f"Failed to create project: {response.text}"
     except Exception as e:
         return False, f"Error creating project: {str(e)}"
@@ -569,6 +608,21 @@ def create_github_repo(repo_name, description="", private=False):
         )
         return True, repo.full_name
     except Exception as e:
+        # Check for duplicate repo name error
+        try:
+            if hasattr(e, 'data') and e.data:
+                error_json = e.data
+            else:
+                error_json = json.loads(str(e).split(':', 1)[-1].strip())
+            if (
+                isinstance(error_json, dict) and
+                error_json.get('errors') and
+                any(err.get('message', '').lower().find('name already exists') != -1 for err in error_json['errors'])
+            ):
+                # st.error("A repository with that name already exists on this account.")
+                return False, "A repository with that name already exists on this account please try with different name."
+        except Exception:
+            pass
         return False, f"Failed to create repository: {str(e)}"
 
 def project_selection_interface():
@@ -1152,7 +1206,8 @@ if uploaded_file is not None:
     os.unlink(temp_file_path)
 
 # Task Management Section
-use_saved = st.checkbox("🔁 View and manage extracted tasks")
+use_saved = st.checkbox("🔁 View and manage extracted tasks", value=st.session_state["view_and_manage"], key="view_and_manage_checkbox")
+st.session_state["view_and_manage"] = use_saved
 if use_saved:
     try:
         # Try to load from file if session state is empty
@@ -1389,6 +1444,7 @@ if use_saved:
                     
                     # Option to reset workflow
                     if st.button("🔄 Start New Workflow", type="secondary"):
+                        st.session_state["view_and_manage"] = False  # Custom session var to control checkbox
                         reset_workflow_state()
                         st.rerun()
         
@@ -1401,3 +1457,4 @@ if use_saved:
         st.error("Could not parse JSON from file.")
     except Exception as e:
         st.error(f"An error occurred: {e}")
+
